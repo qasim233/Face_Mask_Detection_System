@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Mask Detection System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Base styling */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Rajdhani', sans-serif;
+            overflow-x: hidden;
+            position: relative;
+            background-color: #050510;
+            color: #e0f7ff;
+            line-height: 1.6;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 30, 60, 0.5);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #00ccff, #00ffcc);
+            border-radius: 4px;
+        }
+
+        /* Main container */
+        .app-container {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        /* Header */
+        .header {
+            position: relative;
+            padding: 20px 0;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            margin-right: 15px;
+            position: relative;
+        }
+
+        .logo-circle {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid #00ffcc;
+            animation: pulse-ring 2s linear infinite;
+        }
+
+        .logo-circle:nth-child(1) {
+            width: 100%;
+            height: 100%;
+            border-color: #00ccff;
+            animation-delay: 0s;
+        }
+
+        .logo-circle:nth-child(2) {
+            width: 70%;
+            height: 70%;
+            left: 15%;
+            top: 15%;
+            border-color: #00ffaa;
+            animation-delay: 0.5s;
+        }
+
+        .logo-circle:nth-child(3) {
+            width: 40%;
+            height: 40%;
+            left: 30%;
+            top: 30%;
+            border-color: #00ff88;
+            animation-delay: 1s;
+        }
+
+        .logo-icon {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #00ffcc;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.8);
+                opacity: 0.8;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(0.8);
+                opacity: 0.8;
+            }
+        }
+
+        .title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(90deg, #00ffcc, #00ccff, #7000ff, #00ffcc);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: gradient-shift 8s ease infinite;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+        }
+
+        .title::after {
+            content: attr(data-text);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            filter: blur(8px);
+            opacity: 0.5;
+            background: linear-gradient(90deg, #00ffcc, #00ccff, #7000ff, #00ffcc);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: gradient-shift 8s ease infinite;
+        }
+
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            font-weight: 400;
+            margin-top: 5px;
+            color: rgba(224, 247, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Interface container */
+        .interface-container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            padding: 30px;
+            border-radius: 20px;
+            background: rgba(10, 15, 30, 0.6);
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 0 30px rgba(0, 255, 255, 0.2),
+                inset 0 0 20px rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            overflow: hidden;
+        }
+
+        .interface-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+            animation: rotate 20s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Hexagon grid background for interface */
+        .hexagon-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.2;
+            overflow: hidden;
+        }
+
+        .hexagon {
+            position: absolute;
+            width: 50px;
+            height: 28.87px; /* height = width * sqrt(3)/2 */
+            background-color: rgba(0, 255, 255, 0.1);
+            margin: 14.43px 0; /* margin = height/2 */
+            border-left: solid 2px rgba(0, 255, 255, 0.3);
+            border-right: solid 2px rgba(0, 255, 255, 0.3);
+        }
+
+        .hexagon:before,
+        .hexagon:after {
+            content: "";
+            position: absolute;
+            width: 0;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+        }
+
+        .hexagon:before {
+            bottom: 100%;
+            border-bottom: 14.43px solid rgba(0, 255, 255, 0.1);
+        }
+
+        .hexagon:after {
+            top: 100%;
+            border-top: 14.43px solid rgba(0, 255, 255, 0.1);
+        }
+
+        /* Input source selector */
+        .input-selector {
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .selector-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #00ffcc;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+        }
+
+        .input-options {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            position: relative;
+        }
+
+        /* Futuristic button styling */
+        .neo-button {
+            position: relative;
+            padding: 15px 30px;
+            background: rgba(0, 30, 60, 0.5);
+            color: #e0f7ff;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 0 15px rgba(0, 255, 255, 0.3),
+                inset 0 0 5px rgba(0, 255, 255, 0.2);
+            z-index: 1;
+        }
+
+        .neo-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+            z-index: -1;
+        }
+
+        .neo-button:hover::before {
+            transform: translateX(100%);
+        }
+
+        .neo-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 
+                0 0 20px rgba(0, 255, 255, 0.5),
+                inset 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+
+        .neo-button:active {
+            transform: translateY(0);
+        }
+
+        .neo-button.webcam {
+            background: linear-gradient(135deg, rgba(0, 204, 255, 0.2), rgba(0, 30, 60, 0.5));
+            border-left: 2px solid rgba(0, 204, 255, 0.5);
+            border-top: 2px solid rgba(0, 204, 255, 0.5);
+        }
+
+        .neo-button.upload {
+            background: linear-gradient(135deg, rgba(112, 0, 255, 0.2), rgba(0, 30, 60, 0.5));
+            border-left: 2px solid rgba(112, 0, 255, 0.5);
+            border-top: 2px solid rgba(112, 0, 255, 0.5);
+        }
+
+        .neo-button.action {
+            background: linear-gradient(135deg, rgba(0, 255, 204, 0.2), rgba(0, 30, 60, 0.5));
+            border-left: 2px solid rgba(0, 255, 204, 0.5);
+            border-top: 2px solid rgba(0, 255, 204, 0.5);
+        }
+
+        .neo-button.stop {
+            background: linear-gradient(135deg, rgba(255, 94, 98, 0.2), rgba(30, 0, 0, 0.5));
+            border-left: 2px solid rgba(255, 94, 98, 0.5);
+            border-top: 2px solid rgba(255, 94, 98, 0.5);
+        }
+
+        /* File input styling */
+        .file-input {
+            display: none;
+        }
+
+        /* Media display container */
+        .media-display {
+            position: relative;
+            width: 100%;
+            margin: 0 auto;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 
+                0 0 30px rgba(0, 255, 255, 0.3),
+                inset 0 0 10px rgba(0, 255, 255, 0.2);
+            transition: all 0.5s ease;
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            aspect-ratio: 16/9;
+            max-height: 500px;
+        }
+
+        /* Webcam container */
+        .webcam-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 10, 20, 0.8);
+        }
+
+        /* Webcam feed */
+        .webcam-feed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: all 0.5s ease;
+        }
+
+        /* Status indicator */
+        .status-indicator {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: #4CAF50;
+            box-shadow: 0 0 10px #4CAF50;
+            transition: background-color 0.5s ease;
+            z-index: 10;
+        }
+
+        .status-indicator.inactive {
+            background-color: #f44336;
+            box-shadow: 0 0 10px #f44336;
+        }
+
+        /* Scanning effect */
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, transparent, #00ffcc, transparent);
+            box-shadow: 0 0 15px #00ffcc;
+            animation: scan 3s linear infinite;
+            opacity: 0.7;
+            z-index: 5;
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+
+        /* Corner decorations */
+        .corner {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-color: #00ffcc;
+            border-style: solid;
+            border-width: 0;
+            z-index: 5;
+        }
+
+        .corner-tl {
+            top: 10px;
+            left: 10px;
+            border-top-width: 2px;
+            border-left-width: 2px;
+        }
+
+        .corner-tr {
+            top: 10px;
+            right: 10px;
+            border-top-width: 2px;
+            border-right-width: 2px;
+        }
+
+        .corner-bl {
+            bottom: 10px;
+            left: 10px;
+            border-bottom-width: 2px;
+            border-left-width: 2px;
+        }
+
+        .corner-br {
+            bottom: 10px;
+            right: 10px;
+            border-bottom-width: 2px;
+            border-right-width: 2px;
+        }
+
+        /* Image upload preview */
+        .upload-preview {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 10, 20, 0.8);
+        }
+
+        .upload-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Controls container */
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* Processing overlay */
+        .processing-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 10, 30, 0.8);
+            border-radius: 15px;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 20;
+        }
+
+        .processing-content {
+            text-align: center;
+        }
+
+        .processing-spinner {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+        }
+
+        .spinner-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 4px solid transparent;
+            border-top-color: #00ffcc;
+            animation: spin 1.5s linear infinite;
+        }
+
+        .spinner-ring:nth-child(2) {
+            width: 80%;
+            height: 80%;
+            top: 10%;
+            left: 10%;
+            border-top-color: #00ccff;
+            animation-duration: 1.8s;
+            animation-direction: reverse;
+        }
+
+        .spinner-ring:nth-child(3) {
+            width: 60%;
+            height: 60%;
+            top: 20%;
+            left: 20%;
+            border-top-color: #7000ff;
+            animation-duration: 2.1s;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .processing-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            color: #00ffcc;
+            margin-top: 10px;
+            letter-spacing: 2px;
+        }
+
+        .processing-progress {
+            width: 200px;
+            height: 6px;
+            background-color: rgba(0, 255, 204, 0.2);
+            border-radius: 3px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, #00ffcc, #00ccff);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        /* Stats display */
+        .stats-display {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(0, 30, 60, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #00ffcc;
+            margin-bottom: 5px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: rgba(224, 247, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: rgba(224, 247, 255, 0.5);
+            padding: 20px;
+            position: relative;
+        }
+
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.5), transparent);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .interface-container {
+                padding: 20px;
+            }
+            
+            .input-options {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .neo-button {
+                width: 100%;
+                max-width: 250px;
+            }
+            
+            .stats-display {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* Animation for webcam feed when toggled */
+        .webcam-container.inactive .webcam-feed {
+            filter: grayscale(100%) brightness(0.3);
+        }
+
+        /* Pulse animation for active status */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .status-indicator:not(.inactive) {
+            animation: pulse 2s infinite;
+        }
+
+        /* CREATIVE BACKGROUND STYLES */
+        
+        /* Main background */
+        .creative-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+        
+        /* Starfield effect */
+        .starfield {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: #ffffff;
+            border-radius: 50%;
+        }
+        
+        /* Nebula effect */
+        .nebula {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(
+                ellipse at center,
+                rgba(112, 0, 255, 0.2) 0%,
+                rgba(0, 204, 255, 0.1) 50%,
+                rgba(0, 0, 0, 0) 70%
+            );
+            opacity: 0.5;
+            z-index: 2;
+            animation: nebula-shift 30s ease infinite alternate;
+        }
+        
+        @keyframes nebula-shift {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.2) translate(5%, 5%); }
+        }
+        
+        /* Grid lines */
+        .grid-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 3;
+            animation: grid-move 20s linear infinite;
+        }
+        
+        @keyframes grid-move {
+            0% { background-position: 0 0; }
+            100% { background-position: 50px 50px; }
+        }
+        
+        /* Floating particles */
+        .particles-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 4;
+            overflow: hidden;
+        }
+        
+        /* Glowing orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.3) 0%, rgba(0, 255, 255, 0) 70%);
+            filter: blur(5px);
+            z-index: 5;
+        }
+        
+        /* Data streams */
+        .data-stream {
+            position: absolute;
+            color: rgba(0, 255, 255, 0.3);
+            font-family: monospace;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            z-index: 6;
+            animation: stream linear infinite;
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+        }
+        
+        @keyframes stream {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100vh); }
+        }
+        
+        /* Holographic circles */
+        .holo-circle {
+            position: absolute;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 50%;
+            z-index: 7;
+            animation: holo-pulse 4s ease-in-out infinite alternate;
+        }
+        
+        @keyframes holo-pulse {
+            0% { transform: scale(1); opacity: 0.3; }
+            100% { transform: scale(1.2); opacity: 0.1; }
+        }
+        
+        /* Neural network visualization */
+        .neural-network {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 8;
+            opacity: 0.15;
+        }
+        
+        .node {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background-color: #00ffcc;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #00ffcc;
+        }
+        
+        .connection {
+            position: absolute;
+            height: 1px;
+            background-color: rgba(0, 255, 255, 0.5);
+            transform-origin: left center;
+            z-index: -1;
+        }
+        
+        /* Scanning beam */
+        .scanning-beam {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ffcc, transparent);
+            box-shadow: 0 0 10px #00ffcc;
+            top: 50%;
+            animation: beam-move 8s linear infinite;
+            z-index: 9;
+            opacity: 0.7;
+        }
+        
+        @keyframes beam-move {
+            0% { transform: translateY(-50vh) rotate(0deg); }
+            100% { transform: translateY(50vh) rotate(0deg); }
+        }
+        
+        /* Vignette effect */
+        .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            box-shadow: inset 0 0 150px rgba(0, 0, 0, 0.8);
+            z-index: 10;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Creative Background -->
+    <div class="creative-background">
+        <!-- Starfield -->
+        <div class="starfield" id="starfield"></div>
+        
+        <!-- Nebula effect -->
+        <div class="nebula"></div>
+        
+        <!-- Grid lines -->
+        <div class="grid-lines"></div>
+        
+        <!-- Particles container -->
+        <div class="particles-container" id="particlesContainer"></div>
+        
+        <!-- Neural network visualization -->
+        <div class="neural-network" id="neuralNetwork"></div>
+        
+        <!-- Scanning beam -->
+        <div class="scanning-beam"></div>
+        
+        <!-- Vignette effect -->
+        <div class="vignette"></div>
+    </div>
+
+    <!-- Main Application -->
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-container">
+                <div class="logo">
+                    <div class="logo-circle"></div>
+                    <div class="logo-circle"></div>
+                    <div class="logo-circle"></div>
+                    <div class="logo-icon">😷</div>
+                </div>
+                <h1 class="title" data-text="Neural Mask Detection">Neural Mask Detection</h1>
+            </div>
+            <p class="subtitle">Advanced AI-Powered Protection System</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="interface-container">
+                <!-- Hexagon grid background -->
+                <div class="hexagon-grid" id="hexagonGrid"></div>
+                
+                <!-- Input source selector -->
+                <div class="input-selector">
+                    <h3 class="selector-title">Select Input Source</h3>
+                    <div class="input-options">
+                        <button class="neo-button webcam" id="webcamButton">
+                            <span class="button-text">Live Camera</span>
+                        </button>
+                        
+                        <button class="neo-button upload" id="uploadButton">
+                            <span class="button-text">Upload Image</span>
+                        </button>
+                        <input type="file" id="fileInput" class="file-input" accept="image/*">
+                    </div>
+                </div>
+                
+                <!-- Media display area -->
+                <div class="media-display">
+                    <!-- Webcam container -->
+                    <div class="webcam-container" id="webcamContainer">
+                        <img src="/video" alt="Video Feed" class="webcam-feed" id="webcamFeed">
+                        <div class="status-indicator" id="statusIndicator"></div>
+                        <div class="scan-line"></div>
+                        <div class="corner corner-tl"></div>
+                        <div class="corner corner-tr"></div>
+                        <div class="corner corner-bl"></div>
+                        <div class="corner corner-br"></div>
+                    </div>
+                    
+                    <!-- Image upload preview -->
+                    <div class="upload-preview" id="uploadPreview">
+                        <button class="close-btn" id="closeUpload">×</button>
+                        <img id="uploadedImage" src="#" alt="Uploaded Image">
+                        <div class="corner corner-tl"></div>
+                        <div class="corner corner-tr"></div>
+                        <div class="corner corner-bl"></div>
+                        <div class="corner corner-br"></div>
+                    </div>
+                    
+                    <!-- Processing overlay -->
+                    <div class="processing-overlay" id="processingOverlay">
+                        <div class="processing-content">
+                            <div class="processing-spinner">
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                            </div>
+                            <div class="processing-text" id="processingText">ANALYZING</div>
+                            <div class="processing-progress">
+                                <div class="progress-bar" id="progressBar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Controls -->
+                <div class="controls">
+                    <button class="neo-button action" id="toggleButton">Stop Feed</button>
+                    <button class="neo-button action" id="detectButton" style="display: none;">Detect Masks</button>
+                </div>
+                
+                <!-- Stats display -->
+                <div class="stats-display" id="statsDisplay">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalFaces">0</div>
+                        <div class="stat-label">Faces Detected</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="maskedFaces">0</div>
+                        <div class="stat-label">With Mask</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="unmaskedFaces">0</div>
+                        <div class="stat-label">Without Mask</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="confidence">0%</div>
+                        <div class="stat-label">Confidence</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Neural Mask Detection System v2.0 | Powered by TensorFlow & OpenCV</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
